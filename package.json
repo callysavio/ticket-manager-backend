@@ -1,0 +1,30 @@
+{
+    "name": "ticket-management-backend",
+    "version": "1.0.0",
+    "description": "Ticket Management System Backend",
+    "main": "server.js",
+    "type": "module",
+    "scripts": {
+        "start": "node src/index.js",
+        "dev": "nodemon src/index.js",
+        "test": "jest"
+    },
+    "dependencies": {
+        "bcrypt": "^6.0.0",
+        "bcryptjs": "^2.4.3",
+        "cors": "^2.8.5",
+        "dotenv": "^16.6.1",
+        "express": "^4.21.2",
+        "express-rate-limit": "^6.11.2",
+        "express-validator": "^7.2.1",
+        "helmet": "^7.2.0",
+        "jsonwebtoken": "^9.0.2",
+        "mongoose": "^7.8.7",
+        "morgan": "^1.10.0",
+        "nodemailer": "^6.10.1"
+    },
+    "devDependencies": {
+        "jest": "^29.7.0",
+        "nodemon": "^3.1.10"
+    }
+}
