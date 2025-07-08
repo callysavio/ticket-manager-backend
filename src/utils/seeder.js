@@ -1,5 +1,5 @@
-// src/utils/seeder.js
 import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 import User from "../models/User.js";
 import Category from "../models/Category.js";
 import dotenv from "dotenv";
@@ -43,11 +43,14 @@ const seedData = async () => {
 
     const createdCategories = await Category.insertMany(categories);
 
-    // Create admin users
+    // Manually hash password
+    const hashedPassword = await bcrypt.hash("password123", 12);
+
+    // Create admin users with hashed passwords
     const users = [
       {
         email: "tech@example.com",
-        password: "password123",
+        password: hashedPassword,
         firstName: "John",
         lastName: "Tech",
         role: "admin",
@@ -55,7 +58,7 @@ const seedData = async () => {
       },
       {
         email: "billing@example.com",
-        password: "password123",
+        password: hashedPassword,
         firstName: "Sarah",
         lastName: "Billing",
         role: "admin",
@@ -63,7 +66,7 @@ const seedData = async () => {
       },
       {
         email: "general@example.com",
-        password: "password123",
+        password: hashedPassword,
         firstName: "Mike",
         lastName: "General",
         role: "admin",
@@ -71,7 +74,7 @@ const seedData = async () => {
       },
       {
         email: "features@example.com",
-        password: "password123",
+        password: hashedPassword,
         firstName: "Lisa",
         lastName: "Features",
         role: "admin",
@@ -79,7 +82,7 @@ const seedData = async () => {
       },
       {
         email: "superadmin@example.com",
-        password: "password123",
+        password: hashedPassword,
         firstName: "Admin",
         lastName: "Super",
         role: "superadmin",
@@ -89,7 +92,7 @@ const seedData = async () => {
     await User.insertMany(users);
 
     console.log("Database seeded successfully!");
-    console.log("Admin Credentials:");
+    console.log("Admin Login Credentials:");
     console.log("Technical Support: tech@example.com / password123");
     console.log("Billing: billing@example.com / password123");
     console.log("General Inquiry: general@example.com / password123");

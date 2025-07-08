@@ -1,6 +1,6 @@
 import Ticket from "../models/Ticket.js";
 import User from "../models/User.js";
-import {validationResult} from "express-validator";
+import { validationResult } from "express-validator";
 
 const createTicket = async (req, res) => {
   try {
@@ -64,14 +64,13 @@ const getTickets = async (req, res) => {
     const { page = 1, limit = 10, status, priority } = req.query;
     const user = req.user;
 
-    // Build query based on user role
     let query = {};
-    if (user.role === "admin") {
-      // Admin can only see tickets assigned to them
-      query.assignedTo = user.userId;
+
+    if (user.role === "admin" && user.category) {
+      query.category =
+        typeof user.category === "object" ? user.category._id : user.category;
     }
 
-    // Add filters
     if (status) query.status = status;
     if (priority) query.priority = priority;
 

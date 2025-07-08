@@ -1,4 +1,5 @@
 import Ticket from "../models/Ticket.js";
+import Category from "../models/Category.js";
 
 const getDashboardStats = async (req, res) => {
   try {
@@ -29,20 +30,23 @@ const getDashboardStats = async (req, res) => {
       status: "closed",
     });
 
-    // Get priority distribution
+    // ✅ Get total categories (active ones only)
+    const totalCategories = await Category.countDocuments({ isActive: true });
+
+    // Priority distribution
     const priorityStats = await Ticket.aggregate([
       { $match: ticketQuery },
       { $group: { _id: "$priority", count: { $sum: 1 } } },
     ]);
 
-    // Get recent tickets
+    // Recent tickets
     const recentTickets = await Ticket.find(ticketQuery)
       .populate("category")
       .populate("assignedTo", "firstName lastName")
       .sort({ createdAt: -1 })
       .limit(5);
 
-    // Get category distribution (for superadmin)
+    // Category stats (only for superadmin)
     let categoryStats = [];
     if (user.role === "superadmin") {
       categoryStats = await Ticket.aggregate([
@@ -60,6 +64,7 @@ const getDashboardStats = async (req, res) => {
       ]);
     }
 
+    // Return stats
     res.status(200).json({
       success: true,
       data: {
@@ -69,6 +74,7 @@ const getDashboardStats = async (req, res) => {
           inProgress: inProgressTickets,
           resolved: resolvedTickets,
           closed: closedTickets,
+          totalCat: totalCategories,
         },
         priorityStats,
         categoryStats,

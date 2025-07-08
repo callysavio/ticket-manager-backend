@@ -26,7 +26,7 @@ const updateTicketValidation = [
   body("priority").optional().isIn(["low", "medium", "high", "urgent"]),
 ];
 
-router.post("/", createTicketValidation, createTicket);
+router.post("/", createTicket);
 router.get("/", authMiddleware, getTickets);
 router.get("/:id", authMiddleware, getTicketById);
 router.put("/:id", authMiddleware, updateTicketValidation, updateTicket);

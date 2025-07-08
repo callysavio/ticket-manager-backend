@@ -21,31 +21,27 @@ const login = async (req, res) => {
 
     const { email, password } = req.body;
 
-    // Check if user exists
-    const user = await User.findOne({ email, isActive: true }).populate(
-      "category"
-    );
+    // Enforce lower case emails
+    const user = await User.findOne({
+      email: email.toLowerCase(),
+      isActive: true,
+    }).populate("category");
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials",
-      });
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid credentials" });
     }
 
-    // Check password
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials",
-      });
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid credentials" });
     }
 
-    // Update last login
     user.lastLogin = new Date();
     await user.save();
 
-    // Generate token
     const token = generateToken(user._id);
 
     res.status(200).json({
@@ -65,10 +61,7 @@ const login = async (req, res) => {
     });
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
