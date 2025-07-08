@@ -1,86 +1,61 @@
 import express from "express";
-import cors from "cors";
-import helmet from "helmet";
-import morgan from "morgan";
-import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 import { connectDB } from "./config/database.js";
-// import seedData from "../src/utils/seeder.js";
-dotenv.config();
+import authRoutes from "./routes/authRoutes.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
+import ticketRoutes from "./routes/ticketRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
 
-// Import routes
-import authRoutes from "../src/routes/authRoutes.js";
-import ticketRoutes from "../src/routes/ticketRoutes.js";
-import categoryRoutes from "../src/routes/categoryRoutes.js";
-// const userRoutes = require('./src/routes/userRoutes');
-import dashboardRoutes from "../src/routes/dashboardRoutes.js";
+dotenv.config();
 
 const app = express();
 
-// Connect to MongoDB
-connectDB();
-// seedData();
+//CORS setup for Vercel & localhost
+const allowedOrigins = [
+  "https://ticket-manager-nu.vercel.app",
+  "http://localhost:3000",
+];
 
-// Security middleware
-app.use(helmet());
 app.use(
   cors({
     origin: function (origin, callback) {
-      const allowed = [process.env.FRONTEND_URI, "http://localhost:3000"];
-      if (!origin || allowed.includes(origin)) {
+      if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error("CORS not allowed"));
+        console.warn("Blocked by CORS:", origin);
+        callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true,
   })
 );
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: "Too many requests from this IP, please try again later.",
-});
-app.use("/api/", limiter);
-
-// Logging
-app.use(morgan("combined"));
-
-// Body parsing middleware
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+// Middlewares
+app.use(express.json());
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/tickets", ticketRoutes);
-app.use("/api/categories", categoryRoutes);
-// app.use('/api/users', userRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/tickets", ticketRoutes);
 
-// Health check endpoint
-app.get("/api/health", (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Server is running",
-    timestamp: new Date().toISOString(),
-  });
+// Health check
+app.get("/", (req, res) => {
+  res.send("Ticket Manager Backend is live.");
 });
 
-// Error handling middleware
-// app.use(errorHandler);
-
-// Handle 404 routes
-app.use("*", (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: "Route not found",
-  });
-});
-
+// ✅ Start server with your custom DB function
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(PORT, async () => {
+  try {
+    await connectDB(); // your existing DB connection function
+    console.log(`Server running on port ${PORT}`);
+  } catch (err) {
+    console.error("Failed to connect to database", err);
+  }
 });
