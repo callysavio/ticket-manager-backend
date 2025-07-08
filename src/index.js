@@ -20,19 +20,17 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 // seedData();
-const allowedOrigins = [
-  "https://ticket-manager-nu.vercel.app/", // Vercel frontend
-  "http://localhost:3000", // for local dev
-];
+
 // Security middleware
 app.use(helmet());
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      const allowed = [process.env.FRONTEND_URI, "http://localhost:3000"];
+      if (!origin || allowed.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS"));
+        callback(new Error("CORS not allowed"));
       }
     },
     credentials: true,
